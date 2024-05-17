@@ -37,6 +37,28 @@ class Ticket {
   final WayPoint? departure;
 
   int get cost => price?["value"] ?? 0;
+  String get arrivalTime {
+    if (arrival?.date == null) return "--";
+    var time = DateTime.parse(arrival!.date!);
+    return "${time.hour < 10 ? "0" : ""}${time.hour}:${time.minute < 10 ? "0" : ""}${time.minute}";
+  }
+
+  String get departureTime {
+    if (departure?.date == null) return "--";
+    var time = DateTime.parse(departure!.date!);
+    return "${time.hour < 10 ? "0" : ""}${time.hour}:${time.minute < 10 ? "0" : ""}${time.minute}";
+  }
+
+  /// returns durations in hours
+  String? get duration {
+    if (departure?.date == null || arrival?.date == null) return null;
+    var start = DateTime.parse(departure!.date!);
+    var finish = DateTime.parse(arrival!.date!);
+    var d = finish.difference(start);
+    var minutes = d.inMinutes - 60 * d.inHours;
+    if (minutes == 0) return d.inHours.toInt().toString();
+    return (d.inHours + (minutes * 10 / 6).round() / 100).toString();
+  }
 
   Map<String, dynamic> toJson() => _$TicketToJson(this);
 }

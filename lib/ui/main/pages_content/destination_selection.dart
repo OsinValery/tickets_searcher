@@ -80,23 +80,45 @@ class _DestinationSelectionPageState extends State<DestinationSelectionPage> {
       color: theme.colorScheme.surface,
       child: Column(
         children: [
-          const Text("blebleble"),
+          const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.only(top: 16, right: 16, left: 16),
-            decoration: const BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.all(Radius.circular(16)),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceTint,
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
             ),
             margin: const EdgeInsets.only(left: 16, right: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
-                  children: [const Icon(Icons.place), Text(widget.departure)],
+                  children: [
+                    const SizedBox(width: 12),
+                    const Icon(Icons.place),
+                    const SizedBox(width: 12),
+                    Text(
+                      widget.departure,
+                      style: theme.textTheme.titleMedium,
+                    )
+                  ],
                 ),
-                const Divider(),
+                const Divider(height: 16),
                 TextField(
+                  autofocus: true,
                   controller: _controller,
+                  decoration: InputDecoration(
+                    isCollapsed: true,
+                    hintText: "Куда - Турция",
+                    border: InputBorder.none,
+                    prefixIcon: Image.asset(
+                      "assets/icons/search.png",
+                      color: Colors.white,
+                    ),
+                    suffix: IconButton(
+                      onPressed: () => selectCity(""),
+                      icon: const Text("X"),
+                    ),
+                  ),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp("[а-яА-Я ]")),
                   ],

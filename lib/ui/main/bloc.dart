@@ -17,6 +17,7 @@ class MainScreenBloc extends Bloc<BlocEvent, BlocState> {
   String destination = "";
   String departure = "";
   DateTime selectedTime = DateTime.now();
+  DateTime? returnTime;
   var stage = NavigationStage.withoutDestination;
 
   final _musicalSuggestionRepository = MusicalTourRepository();
@@ -35,6 +36,9 @@ class MainScreenBloc extends Bloc<BlocEvent, BlocState> {
     on<GoBackEvent>(_onGoBack);
     on<WorkNewStageEvent>(_getDataForPageEvent);
     on<WayPointsExchange>(_onWayPointsExchange);
+    on<PickFromDateEvent>(_onPickFromTime);
+    on<PickToDateEvent>(_onPickToTime);
+    on<FinishDepartureEntering>(_onFinishDepartureEntering);
 
     StringsCashe.getFromCity().then((value) => departure = value);
   }
@@ -59,7 +63,7 @@ class MainScreenBloc extends Bloc<BlocEvent, BlocState> {
 
   _onFinishDestinationEntering(event, emitter) {
     if (destination.isNotEmpty) {
-      stage = NavigationStage.showDestination;
+      if (departure.isNotEmpty) stage = NavigationStage.showDestination;
       emitter(ChangePageStageState(stage));
       add(WorkNewStageEvent());
     }
@@ -107,6 +111,21 @@ class MainScreenBloc extends Bloc<BlocEvent, BlocState> {
     destination = departure;
     departure = tmp;
     emitter(SetWayPointsState(departure, destination));
+  }
+
+  _onPickFromTime(PickFromDateEvent event, Emitter emitter) {
+    returnTime = event.time ?? returnTime;
+    emitter(RaiseTimeState(selectedTime, returnTime));
+  }
+
+  _onPickToTime(PickToDateEvent event, Emitter emitter) {
+    if (event.time == null) return;
+    selectedTime = event.time!;
+    emitter(RaiseTimeState(selectedTime, returnTime));
+  }
+
+  _onFinishDepartureEntering(event, Emitter emitter) {
+    add(FinishDestinationEnteringEvent());
   }
 }
 

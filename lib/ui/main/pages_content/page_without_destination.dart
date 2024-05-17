@@ -65,11 +65,13 @@ class CitiesSelectionWidget extends StatefulWidget {
 
 class _CitiesSelectionWidgetState extends State<CitiesSelectionWidget> {
   TextEditingController? _controller;
+  TextEditingController? _destinationController;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    _destinationController = TextEditingController();
     StringsCashe.getFromCity().then((value) {
       if (mounted) _controller!.text = value;
     });
@@ -78,11 +80,31 @@ class _CitiesSelectionWidgetState extends State<CitiesSelectionWidget> {
   @override
   void dispose() {
     _controller?.dispose();
+    _destinationController?.dispose();
     super.dispose();
+  }
+
+  void selectDestination() {
+    showModalBottomSheet(
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      context: context,
+      builder: (context2) => Padding(
+        padding: const EdgeInsets.only(top: 64),
+        child: AppendModalDialog(
+          child: DestinationSelectionPage(
+              departure: _controller!.text,
+              bloc: context.read<MainScreenBloc>()),
+        ),
+      ),
+    ).then((value) =>
+        context.read<MainScreenBloc>().add(FinishDestinationEnteringEvent()));
   }
 
   @override
   Widget build(BuildContext context) {
+    var destination = context.watch<MainScreenBloc>().destination;
+    _destinationController?.text = destination;
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceTint,
@@ -121,24 +143,21 @@ class _CitiesSelectionWidgetState extends State<CitiesSelectionWidget> {
                       onChanged: (value) => context
                           .read<MainScreenBloc>()
                           .add(ChangeFromCity(value)),
+                      onSubmitted: (_) {
+                        context
+                            .read<MainScreenBloc>()
+                            .add(FinishDepartureEntering());
+                      },
                     ),
                   ),
                   const Divider(),
-                  ElevatedButton(
-                    onPressed: () => showModalBottomSheet(
-                      backgroundColor: Colors.blue.withAlpha(20),
-                      isScrollControlled: true,
-                      context: context,
-                      builder: (context2) => Padding(
-                        padding: const EdgeInsets.only(top: 64),
-                        child: DestinationSelectionPage(
-                            departure: _controller!.text,
-                            bloc: context.read<MainScreenBloc>()),
-                      ),
-                    ).then((value) => context
-                        .read<MainScreenBloc>()
-                        .add(FinishDestinationEnteringEvent())),
-                    child: const Text('to'),
+                  TextField(
+                    controller: _destinationController,
+                    readOnly: true,
+                    onTap: selectDestination,
+                    decoration: const InputDecoration.collapsed(
+                      hintText: "Куда - Турция",
+                    ),
                   ),
                 ],
               ),
@@ -198,6 +217,46 @@ class MusicalSuggestionWidget extends StatelessWidget {
             ],
           ),
         )
+      ],
+    );
+  }
+}
+
+class AppendModalDialog extends StatelessWidget {
+  const AppendModalDialog({super.key, this.child});
+
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) {
+    const r = Radius.circular(16);
+    var theme = Theme.of(context);
+    return Column(
+      children: [
+        Container(
+          height: 40,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.only(topLeft: r, topRight: r),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: const Color(0xff5E5F61),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(child: child ?? Container()),
       ],
     );
   }

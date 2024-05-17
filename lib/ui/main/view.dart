@@ -51,6 +51,7 @@ class ViewContent extends StatelessWidget {
         int page = (state as SelectPageState).page;
         return Scaffold(
           body: page == 0 ? const AviaTicketsPage() : MockPage(page: page),
+          resizeToAvoidBottomInset: true,
           bottomNavigationBar: BottomNavigationBar(
             backgroundColor: Colors.black,
             currentIndex: page,

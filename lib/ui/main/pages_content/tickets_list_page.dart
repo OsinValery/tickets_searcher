@@ -8,55 +8,98 @@ class TicketsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     return SafeArea(
-      child: Column(
+      child: Stack(
         children: [
-          BlocBuilder<MainScreenBloc, BlocState>(
-            buildWhen: (previous, current) => current is TourInfoState,
-            builder: (context, state) {
-              return Container(
-                color: Colors.green,
+          Column(
+            children: [
+              Container(
+                color: theme.colorScheme.surface,
                 width: double.infinity,
                 height: 60,
-                child: (state is! TourInfoState)
-                    ? null
-                    : Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              context.read<MainScreenBloc>().add(GoBackEvent());
-                            },
-                            icon: const Icon(Icons.arrow_left),
-                          ),
-                          Column(
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () =>
+                          context.read<MainScreenBloc>().add(GoBackEvent()),
+                      icon: Image.asset("assets/icons/left.png"),
+                    ),
+                    BlocBuilder<MainScreenBloc, BlocState>(
+                        buildWhen: (previous, current) =>
+                            current is TourInfoState,
+                        builder: (context, state) {
+                          if (state is! TourInfoState) return Container();
+                          return Column(
                             mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("${state.departure} - ${state.destination}"),
                               Text(
-                                '${state.time.day} ${monthConverter(state.time.month)}',
+                                "${state.departure} - ${state.destination}",
+                                style: theme.textTheme.titleSmall,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${state.time.day} ${monthConverter(state.time.month)}, 1 пассажир',
+                                style: theme.textTheme.displaySmall!.copyWith(
+                                  color: Colors.grey.shade500,
+                                ),
                               ),
                             ],
-                          )
-                        ],
-                      ),
-              );
-            },
-          ),
-          const Text("tickets from api"),
-          BlocBuilder<MainScreenBloc, BlocState>(
-            buildWhen: (previous, current) => current is UpdateTicketsListState,
-            builder: (context, state) {
-              if (state is! UpdateTicketsListState) return Container();
-              return Expanded(
-                  child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ...state.tickets.map((e) => TicketView(ticket: e))
+                          );
+                        })
                   ],
                 ),
-              ));
-            },
+              ),
+              const SizedBox(height: 32),
+              BlocBuilder<MainScreenBloc, BlocState>(
+                buildWhen: (previous, current) =>
+                    current is UpdateTicketsListState,
+                builder: (context, state) {
+                  if (state is! UpdateTicketsListState) return Container();
+                  return Expanded(
+                      child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ...state.tickets.map((e) => TicketView(ticket: e))
+                      ],
+                    ),
+                  ));
+                },
+              )
+            ],
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary,
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    "assets/icons/filter.png",
+                    color: Colors.white,
+                    width: 32,
+                    height: 32,
+                  ),
+                  Text("Фильтр", style: theme.textTheme.displaySmall),
+                  const SizedBox(width: 24),
+                  Image.asset(
+                    "assets/icons/graph.png",
+                    color: Colors.white,
+                    width: 32,
+                    height: 32,
+                  ),
+                  Text("График цен", style: theme.textTheme.displaySmall),
+                ],
+              ),
+            ),
           )
         ],
       ),
@@ -71,11 +114,63 @@ class TicketView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      color: Colors.green,
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+      ),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: const Text('bla'),
+      child: Badge(
+        isLabelVisible: ticket.badge != null,
+        alignment: AlignmentDirectional.topStart,
+        label: Text(
+          ticket.badge ?? '',
+          style: theme.textTheme.displaySmall,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0).copyWith(top: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "${ticket.cost} ₽",
+                style: theme.textTheme.titleLarge,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 24,
+                    height: 24,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text("${ticket.departureTime} - ${ticket.arrivalTime}"),
+                      Text(
+                        "${ticket.departure?.airport ?? ''}        ${ticket.arrival?.airport ?? ''}",
+                        style: theme.textTheme.displaySmall,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                      "${ticket.duration ?? "?"}ч. в пути${ticket.hasTransfer == false ? " / Без пересадок" : ""}"),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -48,6 +48,12 @@ class SetWayPointsState extends BlocState {
   String departure;
 }
 
+class RaiseTimeState extends BlocState {
+  RaiseTimeState(this.to, this.from);
+  DateTime? from;
+  DateTime to;
+}
+
 // ----------------------------------------
 //  events
 // ----------------------------------------
@@ -76,3 +82,15 @@ class GoBackEvent extends BlocEvent {}
 class WorkNewStageEvent extends BlocEvent {}
 
 class WayPointsExchange extends BlocEvent {}
+
+class PickToDateEvent extends BlocEvent {
+  PickToDateEvent(this.time);
+  DateTime? time;
+}
+
+class PickFromDateEvent extends BlocEvent {
+  PickFromDateEvent(this.time);
+  DateTime? time;
+}
+
+class FinishDepartureEntering extends BlocEvent {}
